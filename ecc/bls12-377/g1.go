@@ -1110,15 +1110,17 @@ func (p *G1Affine) DoubleAndAdd(p1, p2 *G1Affine) *G1Affine {
 	l1r.Sub(&p1.X, &p2.X)
 	l1.Div(&l1l, &l1r)
 
-	x3.Mul(&l1, &l1)
+	x3.Square(&l1)
 	x3.Sub(&x3, &p1.X)
 	x3.Sub(&x3, &p2.X)
 
-	l2.Div(l2.Add(&p1.Y, &p1.Y), l2.Sub(&x3, &p1.X))
-	l2.Add(&l2, &l1)
+	var l2l, l2r fp.Element
+	l2l.Add(&p1.Y, &p1.Y)
+	l2r.Sub(&x3, &p1.X)
+	l2.Add(&l2l, &l2r)
 	l2.Neg(&l2)
 
-	x4.Mul(&l2, &l2)
+	x4.Square(&l2)
 	x4.Sub(&x4, &p1.X)
 	x4.Sub(&x4, &x3)
 
