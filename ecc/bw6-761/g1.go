@@ -1217,18 +1217,27 @@ func batchAddG1Affine[TP pG1Affine, TPP ppG1Affine, TC cG1Affine](R *TPP, P *TP,
 }
 
 func (p *G1Affine) DoubleAndAdd(p1, p2 *G1Affine) *G1Affine {
-	var l1, l2, x3, x4, y4 fp.Element
-	l1.Div(l1.Sub(&p1.Y, &p2.Y), l1.Sub(&p1.X, &p2.X))
+	//var l1, l2, x3, x4, y4 fp.Element
 
-	x3.Mul(&l1, &l1)
+	var l1, l1y, l1x fp.Element
+	l1y.Sub(&p1.Y, &p2.Y)
+	l1x.Sub(&p1.X, &p2.X)
+	l1.Div(&l1y, &l1x)
+
+	var x3 fp.Element
+	x3.Square(&l1)
 	x3.Sub(&x3, &p1.X)
 	x3.Sub(&x3, &p2.X)
 
-	l2.Div(l2.Add(&p1.Y, &p1.Y), l2.Sub(&x3, &p1.X))
-	l2.Add(&l2, &l1)
+	var l2y, l2x, l2m, l2 fp.Element
+	l2y.Add(&p1.Y, &p1.Y)
+	l2x.Sub(&x3, &p1.X)
+	l2m.Div(&l2y, &l2x)
+	l2.Add(&l2m, &l1)
 	l2.Neg(&l2)
 
-	x4.Mul(&l2, &l2)
+	var x4, y4 fp.Element
+	x4.Square(&l2)
 	x4.Sub(&x4, &p1.X)
 	x4.Sub(&x4, &x3)
 
@@ -1264,19 +1273,22 @@ func (P *G1Affine) ConstScalarMul(Q G1Affine, s *big.Int) {
 	}
 
 	negQ.Neg(&Q)
+
 	negPhiQ.Neg(&phiQ)
 	var table [4]G1Affine
 
 	table[0] = negQ
 	table[0].AddAssign(negPhiQ)
+
 	table[1] = Q
 	table[1].AddAssign(negPhiQ)
+
 	table[2] = negQ
 	table[2].AddAssign(phiQ)
 	table[3] = Q
 	table[3].AddAssign(phiQ)
-
 	Acc = table[3]
+
 	// if both high bits are set, then we would get to the incomplete part,
 	// handle it separately.
 	if k[0].Bit(nbits-1) == 1 && k[1].Bit(nbits-1) == 1 {
@@ -1285,7 +1297,8 @@ func (P *G1Affine) ConstScalarMul(Q G1Affine, s *big.Int) {
 		nbits = nbits - 1
 	}
 	for i := nbits - 1; i > 0; i-- {
-		Acc.DoubleAndAdd(&Acc, &table[k[0].Bit(i)+2*k[1].Bit(i)])
+		var index = k[0].Bit(i) + 2*k[1].Bit(i)
+		Acc.DoubleAndAdd(&Acc, &table[index])
 	}
 
 	negQ.AddAssign(Acc)
@@ -1313,16 +1326,23 @@ func (p *G1Affine) phi(a *G1Affine) *G1Affine {
 }
 
 func (p *G1Affine) AddAssign(q G1Affine) *G1Affine {
-	var m, xr, yr fp.Element
+	// compute lambda = (q.y-p.y)/(q.x-p.x)
+	var m1, m2, m fp.Element
+	m1.Sub(&q.Y, &p.Y)
+	m2.Sub(&q.X, &p.X)
 
-	//m = (y_p - y_q) / (x_p - x_q)
-	m.Div(m.Sub(&p.Y, &q.Y), m.Sub(&p.X, &q.X))
+	m.Div(&m1, &m2)
 
-	//x_r = m^2 - x_p - x_q
-	xr.Sub(xr.Mul(&m, &m), xr.Add(&p.X, &q.X))
+	var xr1, xr2, xr fp.Element
+	xr1.Square(&m)
+	xr2.Add(&p.X, &q.X)
+	xr.Sub(&xr1, &xr2)
 
-	//y_r = m(x_p - x_r) - y_p
-	yr.Sub(yr.Mul(&m, yr.Sub(&p.X, &xr)), &q.Y)
+	// p.y = lambda(p.x-xr) - p.y
+	var yr1, yr2, yr fp.Element
+	yr1.Sub(&p.X, &xr)
+	yr2.Mul(&m, &yr1)
+	yr.Sub(&yr2, &p.Y)
 
 	p.Y = yr
 	p.X = xr
