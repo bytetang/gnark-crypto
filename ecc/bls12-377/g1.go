@@ -1103,9 +1103,9 @@ func batchAddG1Affine[TP pG1Affine, TPP ppG1Affine, TC cG1Affine](R *TPP, P *TP,
 }
 
 func (p *G1Affine) DoubleAndAdd(p1, p2 *G1Affine) *G1Affine {
-	var l1, l2, x3, x4, y4 fp.Element
+	//var l1, l2, x3, x4, y4 fp.Element
 
-	var l1y, l1x fp.Element
+	var l1, l1y, l1x fp.Element
 	l1y.Sub(&p1.Y, &p2.Y)
 	l1x.Sub(&p1.X, &p2.X)
 	l1.Div(&l1y, &l1x)
