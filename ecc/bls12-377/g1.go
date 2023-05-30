@@ -1170,7 +1170,7 @@ func (P *G1Affine) ConstScalarMul(Q G1Affine, s *big.Int) {
 	//table[2].AddAssign(phiQ)
 	//table[3] = Q
 	//table[3].AddAssign(phiQ)
-	//
+	//x
 	//Acc = table[3]
 	//// if both high bits are set, then we would get to the incomplete part,
 	//// handle it separately.
@@ -1219,17 +1219,14 @@ func (p *G1Affine) AddAssign(q G1Affine) *G1Affine {
 
 	m.Div(&m1, &m2)
 
-	p.X = m
-	p.Y = m
+	var xr1, xr2, xr fp.Element
+	xr1.Square(&m)
+	xr2.Add(&p.X, &q.X)
+	xr.Sub(&xr1, &xr2)
 
-	////x_r = m^2 - x_p - x_q
-	////xr1 := xr.Square(&m)
-	////xr2 := xr.Add(&p.X, &q.X)
-	//var xr1, xr2 fp.Element
-	//xr1.Square(&m)
-	//xr2.Add(&p.X, &q.X)
-	//xr.Sub(&xr1, &xr2)
-	//
+	p.X = xr
+	p.Y = xr
+
 	//fmt.Println("xr:", xr)
 	//
 	////y_r = m(x_p - x_r) - y_p
