@@ -1122,19 +1122,18 @@ func (p *G1Affine) DoubleAndAdd(p1, p2 *G1Affine) *G1Affine {
 	l2.Add(&l2m, &l1)
 	l2.Neg(&l2)
 
-	//x4.Square(&l2)
-	//x4.Sub(&x4, &p1.X)
-	//x4.Sub(&x4, &x3)
-	//
-	//y4.Sub(&p1.X, &x4)
-	//y4.Mul(&l2, &y4)
-	//y4.Sub(&y4, &p1.Y)
-	//
-	//p.X = x4
-	//p.Y = y4
+	var x4, y4 fp.Element
+	x4.Square(&l2)
+	x4.Sub(&x4, &p1.X)
+	x4.Sub(&x4, &x3)
 
-	p.X = l2
-	p.Y = l2
+	y4.Sub(&p1.X, &x4)
+	y4.Mul(&l2, &y4)
+	y4.Sub(&y4, &p1.Y)
+
+	p.X = x4
+	p.Y = y4
+
 	return p
 }
 
