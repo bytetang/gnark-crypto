@@ -17,7 +17,6 @@
 package bls12377
 
 import (
-	"fmt"
 	"github.com/consensys/gnark-crypto/ecc"
 	"github.com/consensys/gnark-crypto/ecc/bls12-377/fp"
 	"github.com/consensys/gnark-crypto/ecc/bls12-377/fr"
@@ -1225,23 +1224,14 @@ func (p *G1Affine) AddAssign(q G1Affine) *G1Affine {
 	xr2.Add(&p.X, &q.X)
 	xr.Sub(&xr1, &xr2)
 
-	fmt.Println(xr)
+	// p.y = lambda(p.x-xr) - p.y
+	var yr1, yr2, yr fp.Element
+	yr1.Sub(&p.X, &xr)
+	yr2.Mul(&m, &yr1)
+	yr.Sub(&yr2, &p.Y)
 
+	p.Y = yr
 	p.X = xr
-	p.Y = xr
-
-	//fmt.Println("xr:", xr)
-	//
-	////y_r = m(x_p - x_r) - y_p
-	//var yr1, yr2 fp.Element
-	//yr1.Sub(&p.X, &xr)
-	//yr2.Mul(&m, &yr1)
-	//yr.Sub(&yr2, &p.Y)
-	//
-	////yr.Sub(yr.Mul(&m, yr.Sub(&p.X, &xr)), &p.Y)
-	//
-	//p.Y = yr
-	//p.X = xr
 
 	return p
 }
