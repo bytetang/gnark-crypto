@@ -1166,8 +1166,8 @@ func (P *G1Affine) ConstScalarMul(Q G1Affine, s *big.Int) {
 
 	table[1] = Q
 
-	P.X = table[1].X
-	P.Y = table[1].Y
+	P.X = negPhiQ.X
+	P.Y = negPhiQ.X
 
 	//table[1].AddAssign(negPhiQ)
 
