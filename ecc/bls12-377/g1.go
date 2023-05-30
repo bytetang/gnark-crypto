@@ -1187,24 +1187,21 @@ func (P *G1Affine) ConstScalarMul(Q G1Affine, s *big.Int) {
 		Acc.DoubleAndAdd(&Acc, &table[index])
 	}
 
-	P.X = Acc.X
-	P.Y = Acc.Y
+	negQ.AddAssign(Acc)
 
-	//negQ.AddAssign(Acc)
-	//
-	//// Acc.Select(k[0].Bit(0), Acc, negQ)
-	//if k[0].Bit(0) == 0 {
-	//	Acc.X = negQ.X
-	//	Acc.Y = negQ.Y
-	//}
-	//negPhiQ.AddAssign(Acc)
-	//
-	//if k[1].Bit(0) == 0 {
-	//	Acc.X = negPhiQ.X
-	//	Acc.Y = negPhiQ.Y
-	//}
-	//// Acc.Select(api, k[1].Bit(0), Acc, negPhiQ)
-	//P.X, P.Y = Acc.X, Acc.Y
+	// Acc.Select(k[0].Bit(0), Acc, negQ)
+	if k[0].Bit(0) == 0 {
+		Acc.X = negQ.X
+		Acc.Y = negQ.Y
+	}
+	negPhiQ.AddAssign(Acc)
+
+	if k[1].Bit(0) == 0 {
+		Acc.X = negPhiQ.X
+		Acc.Y = negPhiQ.Y
+	}
+	// Acc.Select(api, k[1].Bit(0), Acc, negPhiQ)
+	P.X, P.Y = Acc.X, Acc.Y
 
 }
 
