@@ -1136,7 +1136,7 @@ func (p *G1Affine) DoubleAndAdd(p1, p2 *G1Affine) *G1Affine {
 }
 
 func (P *G1Affine) ConstScalarMul(Q G1Affine, s *big.Int) {
-	var Acc, negQ, negPhiQ, phiQ G1Affine
+	var negQ, negPhiQ, phiQ G1Affine
 
 	s.Mod(s, ecc.BLS12_377.ScalarField())
 	phiQ.phi(&Q)
@@ -1166,26 +1166,26 @@ func (P *G1Affine) ConstScalarMul(Q G1Affine, s *big.Int) {
 
 	table[1] = Q
 	table[1].AddAssign(negPhiQ)
-	table[2] = negQ
-	table[2].AddAssign(phiQ)
-	table[3] = Q
-	table[3].AddAssign(phiQ)
-	Acc = table[3]
-
-	// if both high bits are set, then we would get to the incomplete part,
-	// handle it separately.
-	if k[0].Bit(nbits-1) == 1 && k[1].Bit(nbits-1) == 1 {
-		Acc.Double(&Acc)
-		Acc.AddAssign(table[3])
-		nbits = nbits - 1
-	}
-	for i := nbits - 1; i > 0; i-- {
-		var index = k[0].Bit(i) + 2*k[1].Bit(i)
-		Acc.DoubleAndAdd(&Acc, &table[index])
-	}
 
 	P.X = table[1].X
 	P.Y = table[1].Y
+	//table[2] = negQ
+	//table[2].AddAssign(phiQ)
+	//table[3] = Q
+	//table[3].AddAssign(phiQ)
+	//Acc = table[3]
+	//
+	//// if both high bits are set, then we would get to the incomplete part,
+	//// handle it separately.
+	//if k[0].Bit(nbits-1) == 1 && k[1].Bit(nbits-1) == 1 {
+	//	Acc.Double(&Acc)
+	//	Acc.AddAssign(table[3])
+	//	nbits = nbits - 1
+	//}
+	//for i := nbits - 1; i > 0; i-- {
+	//	var index = k[0].Bit(i) + 2*k[1].Bit(i)
+	//	Acc.DoubleAndAdd(&Acc, &table[index])
+	//}
 
 	//negQ.AddAssign(Acc)
 	//
