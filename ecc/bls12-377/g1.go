@@ -17,7 +17,6 @@
 package bls12377
 
 import (
-	"fmt"
 	"github.com/consensys/gnark-crypto/ecc"
 	"github.com/consensys/gnark-crypto/ecc/bls12-377/fp"
 	"github.com/consensys/gnark-crypto/ecc/bls12-377/fr"
@@ -1210,31 +1209,35 @@ func (p *G1Affine) phi(a *G1Affine) *G1Affine {
 }
 
 func (p *G1Affine) AddAssign(q G1Affine) *G1Affine {
-	var m, xr, yr fp.Element
+	//var m, xr, yr fp.Element
+	var m fp.Element
 
 	//m = (y_p - y_q) / (x_p - x_q)
 	m.Div(m.Sub(&p.Y, &q.Y), m.Sub(&p.X, &q.X))
 
-	//x_r = m^2 - x_p - x_q
-	//xr1 := xr.Square(&m)
-	//xr2 := xr.Add(&p.X, &q.X)
-	var xr1, xr2 fp.Element
-	xr1.Square(&m)
-	xr2.Add(&p.X, &q.X)
-	xr.Sub(&xr1, &xr2)
+	p.X = m
+	p.Y = m
 
-	fmt.Println("xr:", xr)
-
-	//y_r = m(x_p - x_r) - y_p
-	var yr1, yr2 fp.Element
-	yr1.Sub(&p.X, &xr)
-	yr2.Mul(&m, &yr1)
-	yr.Sub(&yr2, &p.Y)
-
-	//yr.Sub(yr.Mul(&m, yr.Sub(&p.X, &xr)), &p.Y)
-
-	p.Y = yr
-	p.X = xr
+	////x_r = m^2 - x_p - x_q
+	////xr1 := xr.Square(&m)
+	////xr2 := xr.Add(&p.X, &q.X)
+	//var xr1, xr2 fp.Element
+	//xr1.Square(&m)
+	//xr2.Add(&p.X, &q.X)
+	//xr.Sub(&xr1, &xr2)
+	//
+	//fmt.Println("xr:", xr)
+	//
+	////y_r = m(x_p - x_r) - y_p
+	//var yr1, yr2 fp.Element
+	//yr1.Sub(&p.X, &xr)
+	//yr2.Mul(&m, &yr1)
+	//yr.Sub(&yr2, &p.Y)
+	//
+	////yr.Sub(yr.Mul(&m, yr.Sub(&p.X, &xr)), &p.Y)
+	//
+	//p.Y = yr
+	//p.X = xr
 
 	return p
 }
