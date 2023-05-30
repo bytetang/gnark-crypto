@@ -1103,8 +1103,7 @@ func batchAddG1Affine[TP pG1Affine, TPP ppG1Affine, TC cG1Affine](R *TPP, P *TP,
 }
 
 func (p *G1Affine) DoubleAndAdd(p1, p2 *G1Affine) *G1Affine {
-	//var l1, l2, x3, x4, y4 fp.Element
-	var l1 fp.Element
+	var l1, l2, x3, x4, y4 fp.Element
 
 	var l1y, l1x fp.Element
 	l1y.Sub(&p1.Y, &p2.Y)
@@ -1112,22 +1111,22 @@ func (p *G1Affine) DoubleAndAdd(p1, p2 *G1Affine) *G1Affine {
 	l1.Div(&l1y, &l1x)
 
 	//x3.Square(&l1)
-	//x3.Sub(&x3, &p1.X)
-	//x3.Sub(&x3, &p2.X)
-	//
-	//var l2l, l2r fp.Element
-	//l2l.Add(&p1.Y, &p1.Y)
-	//l2r.Sub(&x3, &p1.X)
-	//l2.Add(&l2l, &l2r)
-	//l2.Neg(&l2)
-	//
-	//x4.Square(&l2)
-	//x4.Sub(&x4, &p1.X)
-	//x4.Sub(&x4, &x3)
-	//
-	//y4.Sub(&p1.X, &x4)
-	//y4.Mul(&l2, &y4)
-	//y4.Sub(&y4, &p1.Y)
+	x3.Sub(&x3, &p1.X)
+	x3.Sub(&x3, &p2.X)
+
+	var l2l, l2r fp.Element
+	l2l.Add(&p1.Y, &p1.Y)
+	l2r.Sub(&x3, &p1.X)
+	l2.Add(&l2l, &l2r)
+	l2.Neg(&l2)
+
+	x4.Square(&l2)
+	x4.Sub(&x4, &p1.X)
+	x4.Sub(&x4, &x3)
+
+	y4.Sub(&p1.X, &x4)
+	y4.Mul(&l2, &y4)
+	y4.Sub(&y4, &p1.Y)
 
 	p.X = l1
 	p.Y = l1
@@ -1136,7 +1135,7 @@ func (p *G1Affine) DoubleAndAdd(p1, p2 *G1Affine) *G1Affine {
 }
 
 func (P *G1Affine) ConstScalarMul(Q G1Affine, s *big.Int) {
-	var negQ, negPhiQ, phiQ G1Affine
+	var Acc, negQ, negPhiQ, phiQ G1Affine
 
 	s.Mod(s, ecc.BLS12_377.ScalarField())
 	phiQ.phi(&Q)
@@ -1167,25 +1166,26 @@ func (P *G1Affine) ConstScalarMul(Q G1Affine, s *big.Int) {
 	table[1] = Q
 	table[1].AddAssign(negPhiQ)
 
-	P.X = table[1].X
-	P.Y = table[1].Y
-	//table[2] = negQ
-	//table[2].AddAssign(phiQ)
-	//table[3] = Q
-	//table[3].AddAssign(phiQ)
-	//Acc = table[3]
-	//
-	//// if both high bits are set, then we would get to the incomplete part,
-	//// handle it separately.
-	//if k[0].Bit(nbits-1) == 1 && k[1].Bit(nbits-1) == 1 {
-	//	Acc.Double(&Acc)
-	//	Acc.AddAssign(table[3])
-	//	nbits = nbits - 1
-	//}
-	//for i := nbits - 1; i > 0; i-- {
-	//	var index = k[0].Bit(i) + 2*k[1].Bit(i)
-	//	Acc.DoubleAndAdd(&Acc, &table[index])
-	//}
+	table[2] = negQ
+	table[2].AddAssign(phiQ)
+	table[3] = Q
+	table[3].AddAssign(phiQ)
+	Acc = table[3]
+
+	// if both high bits are set, then we would get to the incomplete part,
+	// handle it separately.
+	if k[0].Bit(nbits-1) == 1 && k[1].Bit(nbits-1) == 1 {
+		Acc.Double(&Acc)
+		Acc.AddAssign(table[3])
+		nbits = nbits - 1
+	}
+	for i := nbits - 1; i > 0; i-- {
+		var index = k[0].Bit(i) + 2*k[1].Bit(i)
+		Acc.DoubleAndAdd(&Acc, &table[index])
+	}
+
+	P.X = Acc.X
+	P.Y = Acc.Y
 
 	//negQ.AddAssign(Acc)
 	//
