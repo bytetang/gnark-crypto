@@ -1213,14 +1213,14 @@ func (p *G1Affine) phi(a *G1Affine) *G1Affine {
 
 func (p *G1Affine) AddAssign(q G1Affine) *G1Affine {
 	//var m, xr, yr fp.Element
-	var m fp.Element
+	//var m fp.Element
 
 	// compute lambda = (q.y-p.y)/(q.x-p.x)
-	var m1, m2 fp.Element
-	m1.Sub(&q.Y, &p.Y)
-	m2.Sub(&q.X, &p.Y)
-
-	m.Div(&m1, &m2)
+	//var m1, m2 fp.Element
+	//m1.Sub(&q.Y, &p.Y)
+	//m2.Sub(&q.X, &p.Y)
+	//
+	//m.Div(&m1, &m2)
 
 	//var xr1, xr2, xr fp.Element
 	//xr1.Square(&m)
@@ -1236,8 +1236,8 @@ func (p *G1Affine) AddAssign(q G1Affine) *G1Affine {
 	//p.Y = yr
 	//p.X = xr
 
-	p.X = m
-	p.Y = m
+	p.X = q.X
+	p.Y = q.Y
 
 	return p
 }
