@@ -1165,12 +1165,10 @@ func (P *G1Affine) ConstScalarMul(Q G1Affine, s *big.Int) {
 	table[0].AddAssign(negPhiQ)
 
 	table[1] = Q
+	table[1].AddAssign(negPhiQ)
 
-	P.X = negPhiQ.X
-	P.Y = negPhiQ.Y
-
-	//table[1].AddAssign(negPhiQ)
-
+	P.X = table[1].X
+	P.Y = table[1].Y
 	//table[2] = negQ
 	//table[2].AddAssign(phiQ)
 	//table[3] = Q
@@ -1224,19 +1222,22 @@ func (p *G1Affine) AddAssign(q G1Affine) *G1Affine {
 
 	m.Div(&m1, &m2)
 
-	var xr1, xr2, xr fp.Element
-	xr1.Square(&m)
-	xr2.Add(&p.X, &q.X)
-	xr.Sub(&xr1, &xr2)
+	//var xr1, xr2, xr fp.Element
+	//xr1.Square(&m)
+	//xr2.Add(&p.X, &q.X)
+	//xr.Sub(&xr1, &xr2)
+	//
+	//// p.y = lambda(p.x-xr) - p.y
+	//var yr1, yr2, yr fp.Element
+	//yr1.Sub(&p.X, &xr)
+	//yr2.Mul(&m, &yr1)
+	//yr.Sub(&yr2, &p.Y)
+	//
+	//p.Y = yr
+	//p.X = xr
 
-	// p.y = lambda(p.x-xr) - p.y
-	var yr1, yr2, yr fp.Element
-	yr1.Sub(&p.X, &xr)
-	yr2.Mul(&m, &yr1)
-	yr.Sub(&yr2, &p.Y)
-
-	p.Y = yr
-	p.X = xr
+	p.X = m
+	p.Y = m
 
 	return p
 }
