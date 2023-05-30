@@ -17,6 +17,7 @@
 package bls12377
 
 import (
+	"fmt"
 	"github.com/consensys/gnark-crypto/ecc"
 	"github.com/consensys/gnark-crypto/ecc/bls12-377/fp"
 	"github.com/consensys/gnark-crypto/ecc/bls12-377/fr"
@@ -121,7 +122,10 @@ func (p *G1Affine) Equal(a *G1Affine) bool {
 // Neg computes -G
 func (p *G1Affine) Neg(a *G1Affine) *G1Affine {
 	p.X = a.X
-	p.Y.Neg(&a.Y)
+	//p.Y.Neg(&a.Y)
+	var fr fp.Element
+	fr.SetBigInt(big.NewInt(0))
+	p.Y.Sub(&fr, &a.Y)
 	return p
 }
 
@@ -1097,4 +1101,140 @@ func batchAddG1Affine[TP pG1Affine, TPP ppG1Affine, TC cG1Affine](R *TPP, P *TP,
 		rr.Y.Sub(&rr.Y, &(*R)[j].Y)
 		(*R)[j].Set(&rr)
 	}
+}
+
+func (p *G1Affine) DoubleAndAdd(p1, p2 *G1Affine) *G1Affine {
+	var l1, l2, x3, x4, y4 fp.Element
+
+	var l1l, l1r fp.Element
+	l1l.Sub(&p1.Y, &p2.Y)
+	l1r.Sub(&p1.X, &p2.X)
+	l1.Div(&l1l, &l1r)
+
+	x3.Mul(&l1, &l1)
+	x3.Sub(&x3, &p1.X)
+	x3.Sub(&x3, &p2.X)
+
+	l2.Div(l2.Add(&p1.Y, &p1.Y), l2.Sub(&x3, &p1.X))
+	l2.Add(&l2, &l1)
+	l2.Neg(&l2)
+
+	x4.Mul(&l2, &l2)
+	x4.Sub(&x4, &p1.X)
+	x4.Sub(&x4, &x3)
+
+	y4.Sub(&p1.X, &x4)
+	y4.Mul(&l2, &y4)
+	y4.Sub(&y4, &p1.Y)
+
+	p.X = x4
+	p.Y = y4
+
+	return p
+}
+
+func (P *G1Affine) ConstScalarMul(Q G1Affine, s *big.Int) {
+	//var Acc, negQ, negPhiQ, phiQ G1Affine
+
+	var phiQ G1Affine
+
+	s.Mod(s, ecc.BLS12_377.ScalarField())
+	phiQ.phi(&Q)
+
+	P.X = phiQ.X
+	P.Y = phiQ.Y
+
+	//k := ecc.SplitScalar(s, &glvBasis)
+	//
+	//if k[0].Sign() == -1 {
+	//	k[0].Neg(&k[0])
+	//	Q.Neg(&Q)
+	//}
+	//if k[1].Sign() == -1 {
+	//	k[1].Neg(&k[1])
+	//	phiQ.Neg(&phiQ)
+	//}
+	//nbits := k[0].BitLen()
+	//if k[1].BitLen() > nbits {
+	//	nbits = k[1].BitLen()
+	//}
+	//
+	//negQ.Neg(&Q)
+	//negPhiQ.Neg(&phiQ)
+	//var table [4]G1Affine
+	//
+	//table[0] = negQ
+	//table[0].AddAssign(negPhiQ)
+	//table[1] = Q
+	//table[1].AddAssign(negPhiQ)
+	//table[2] = negQ
+	//table[2].AddAssign(phiQ)
+	//table[3] = Q
+	//table[3].AddAssign(phiQ)
+	//
+	//Acc = table[3]
+	//// if both high bits are set, then we would get to the incomplete part,
+	//// handle it separately.
+	//if k[0].Bit(nbits-1) == 1 && k[1].Bit(nbits-1) == 1 {
+	//	Acc.Double(&Acc)
+	//	Acc.AddAssign(table[3])
+	//	nbits = nbits - 1
+	//}
+	//for i := nbits - 1; i > 0; i-- {
+	//	var index = k[0].Bit(i) + 2*k[1].Bit(i)
+	//	Acc.DoubleAndAdd(&Acc, &table[index])
+	//}
+	//
+	//negQ.AddAssign(Acc)
+	//
+	//// Acc.Select(k[0].Bit(0), Acc, negQ)
+	//if k[0].Bit(0) == 0 {
+	//	Acc.X = negQ.X
+	//	Acc.Y = negQ.Y
+	//}
+	//negPhiQ.AddAssign(Acc)
+	//
+	//if k[1].Bit(0) == 0 {
+	//	Acc.X = negPhiQ.X
+	//	Acc.Y = negPhiQ.Y
+	//}
+	//// Acc.Select(api, k[1].Bit(0), Acc, negPhiQ)
+	//P.X, P.Y = Acc.X, Acc.Y
+
+}
+
+func (p *G1Affine) phi(a *G1Affine) *G1Affine {
+	p.X.Mul(&a.X, &thirdRootOneG1)
+	p.Y = a.Y
+	return p
+}
+
+func (p *G1Affine) AddAssign(q G1Affine) *G1Affine {
+	var m, xr, yr fp.Element
+
+	//m = (y_p - y_q) / (x_p - x_q)
+	m.Div(m.Sub(&p.Y, &q.Y), m.Sub(&p.X, &q.X))
+
+	//x_r = m^2 - x_p - x_q
+	//xr1 := xr.Square(&m)
+	//xr2 := xr.Add(&p.X, &q.X)
+	var xr1, xr2 fp.Element
+	xr1.Square(&m)
+	xr2.Add(&p.X, &q.X)
+	xr.Sub(&xr1, &xr2)
+
+	fmt.Println("xr:", xr)
+
+	//y_r = m(x_p - x_r) - y_p
+	var yr1, yr2 fp.Element
+	yr1.Sub(&p.X, &xr)
+	yr2.Mul(&m, &yr1)
+	yr.Sub(&yr2, &p.Y)
+
+	//yr.Sub(yr.Mul(&m, yr.Sub(&p.X, &xr)), &p.Y)
+
+	p.Y = yr
+	p.X = xr
+
+	return p
 }

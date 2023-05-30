@@ -23,7 +23,6 @@ import (
 	"testing"
 
 	"github.com/consensys/gnark-crypto/ecc/bw6-761/fp"
-
 	"github.com/consensys/gnark-crypto/ecc/bw6-761/fr"
 	"github.com/leanovate/gopter"
 	"github.com/leanovate/gopter/prop"
@@ -723,4 +722,34 @@ func fuzzg1JacExtended(p *g1JacExtended, f fp.Element) g1JacExtended {
 	res.ZZ.Mul(&p.ZZ, &ff)
 	res.ZZZ.Mul(&p.ZZZ, &fff)
 	return res
+}
+
+func randomPointG1() G1Jac {
+
+	p1, _, _, _ := Generators()
+
+	var r1 fr.Element
+	var b big.Int
+	_, _ = r1.SetRandom()
+	p1.ScalarMultiplication(&p1, r1.BigInt(&b))
+
+	return p1
+}
+
+func TestConstMul(t *testing.T) {
+	p1 := randomPointG1()
+	var a, b G1Affine
+	a.FromJacobian(&p1)
+
+	s, _ := new(big.Int).SetString("137937633822650178050763875402483429610", 0)
+	a.ConstScalarMul(a, s)
+
+	ja := p1.ScalarMultiplication(&p1, s)
+	b.FromJacobian(ja)
+
+	fmt.Println(a.X)
+	fmt.Println(b.X)
+
+	fmt.Println(a.Y)
+	fmt.Println(b.Y)
 }

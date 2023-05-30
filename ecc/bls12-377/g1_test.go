@@ -724,3 +724,34 @@ func fuzzg1JacExtended(p *g1JacExtended, f fp.Element) g1JacExtended {
 	res.ZZZ.Mul(&p.ZZZ, &fff)
 	return res
 }
+
+func randomPointG1() G1Jac {
+
+	p1, _, _, _ := Generators()
+
+	var r1 fr.Element
+	var b big.Int
+	r1.SetBigInt(big.NewInt(1))
+	s := r1.BigInt(&b)
+	p1.ScalarMultiplication(&p1, s)
+
+	return p1
+}
+
+func TestConstMul(t *testing.T) {
+	p1 := randomPointG1()
+	var a, b G1Affine
+	a.FromJacobian(&p1)
+
+	s, _ := new(big.Int).SetString("2", 10)
+	a.ConstScalarMul(a, s)
+
+	ja := p1.ScalarMultiplication(&p1, s)
+	b.FromJacobian(ja)
+
+	fmt.Println("ax:", a.X)
+	fmt.Println("bx:", b.X)
+
+	fmt.Println("ay:", a.Y)
+	fmt.Println("by", b.Y)
+}
