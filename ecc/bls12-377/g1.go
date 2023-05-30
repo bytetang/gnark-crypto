@@ -1135,7 +1135,7 @@ func (p *G1Affine) DoubleAndAdd(p1, p2 *G1Affine) *G1Affine {
 }
 
 func (P *G1Affine) ConstScalarMul(Q G1Affine, s *big.Int) {
-	var Acc, negQ, negPhiQ, phiQ G1Affine
+	var negQ, negPhiQ, phiQ G1Affine
 
 	s.Mod(s, ecc.BLS12_377.ScalarField())
 	phiQ.phi(&Q)
@@ -1170,7 +1170,7 @@ func (P *G1Affine) ConstScalarMul(Q G1Affine, s *big.Int) {
 	table[2].AddAssign(phiQ)
 	table[3] = Q
 	table[3].AddAssign(phiQ)
-	Acc = table[3]
+	//Acc = table[3]
 
 	P.X = table[1].X
 	P.Y = table[1].Y
