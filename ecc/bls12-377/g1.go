@@ -1106,10 +1106,10 @@ func (p *G1Affine) DoubleAndAdd(p1, p2 *G1Affine) *G1Affine {
 	//var l1, l2, x3, x4, y4 fp.Element
 	var l1 fp.Element
 
-	var l1l, l1r fp.Element
-	l1l.Sub(&p1.Y, &p2.Y)
-	l1r.Sub(&p1.X, &p2.X)
-	l1.Div(&l1l, &l1r)
+	var l1y, l1x fp.Element
+	l1y.Sub(&p1.Y, &p2.Y)
+	l1x.Sub(&p1.X, &p2.X)
+	l1.Div(&l1y, &l1x)
 
 	//x3.Square(&l1)
 	//x3.Sub(&x3, &p1.X)
@@ -1184,8 +1184,8 @@ func (P *G1Affine) ConstScalarMul(Q G1Affine, s *big.Int) {
 		Acc.DoubleAndAdd(&Acc, &table[index])
 	}
 
-	P.X = Acc.X
-	P.Y = Acc.Y
+	P.X = table[1].X
+	P.Y = table[1].Y
 
 	//negQ.AddAssign(Acc)
 	//
