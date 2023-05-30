@@ -1236,8 +1236,8 @@ func (p *G1Affine) AddAssign(q G1Affine) *G1Affine {
 	//p.Y = yr
 	//p.X = xr
 
-	p.X = q.X
-	p.Y = q.Y
+	//p.X = q.X
+	//p.Y = q.Y
 
 	return p
 }
