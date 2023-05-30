@@ -1215,7 +1215,7 @@ func (p *G1Affine) AddAssign(q G1Affine) *G1Affine {
 	// compute lambda = (q.y-p.y)/(q.x-p.x)
 	var m1, m2, m fp.Element
 	m1.Sub(&q.Y, &p.Y)
-	m2.Sub(&q.X, &p.Y)
+	m2.Sub(&q.X, &p.X)
 
 	m.Div(&m1, &m2)
 
