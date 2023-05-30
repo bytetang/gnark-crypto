@@ -1213,7 +1213,7 @@ func (p *G1Affine) AddAssign(q G1Affine) *G1Affine {
 	var m fp.Element
 
 	//m = (y_p - y_q) / (x_p - x_q)
-	m.Div(m.Sub(&p.Y, &q.Y), m.Sub(&p.X, &q.X))
+	m.Div(m.Sub(&q.Y, &p.Y), m.Sub(&q.X, &p.X))
 
 	p.X = m
 	p.Y = m
