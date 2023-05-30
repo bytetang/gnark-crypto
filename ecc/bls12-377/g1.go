@@ -1136,30 +1136,30 @@ func (p *G1Affine) DoubleAndAdd(p1, p2 *G1Affine) *G1Affine {
 func (P *G1Affine) ConstScalarMul(Q G1Affine, s *big.Int) {
 	//var Acc, negQ, negPhiQ, phiQ G1Affine
 
-	var phiQ G1Affine
+	var negQ, phiQ G1Affine
 
 	s.Mod(s, ecc.BLS12_377.ScalarField())
 	phiQ.phi(&Q)
 
-	P.X = phiQ.X
-	P.Y = phiQ.Y
+	k := ecc.SplitScalar(s, &glvBasis)
 
-	//k := ecc.SplitScalar(s, &glvBasis)
-	//
-	//if k[0].Sign() == -1 {
-	//	k[0].Neg(&k[0])
-	//	Q.Neg(&Q)
-	//}
-	//if k[1].Sign() == -1 {
-	//	k[1].Neg(&k[1])
-	//	phiQ.Neg(&phiQ)
-	//}
-	//nbits := k[0].BitLen()
-	//if k[1].BitLen() > nbits {
-	//	nbits = k[1].BitLen()
-	//}
-	//
-	//negQ.Neg(&Q)
+	if k[0].Sign() == -1 {
+		k[0].Neg(&k[0])
+		Q.Neg(&Q)
+	}
+	if k[1].Sign() == -1 {
+		k[1].Neg(&k[1])
+		phiQ.Neg(&phiQ)
+	}
+	nbits := k[0].BitLen()
+	if k[1].BitLen() > nbits {
+		nbits = k[1].BitLen()
+	}
+
+	negQ.Neg(&Q)
+
+	P.X = negQ.X
+	P.Y = negQ.Y
 	//negPhiQ.Neg(&phiQ)
 	//var table [4]G1Affine
 	//
