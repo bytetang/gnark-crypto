@@ -1169,20 +1169,21 @@ func (P *G1Affine) ConstScalarMul(Q G1Affine, s *big.Int) {
 	table[3].AddAssign(phiQ)
 	Acc = table[3]
 
+	// if both high bits are set, then we would get to the incomplete part,
+	// handle it separately.
+	if k[0].Bit(nbits-1) == 1 && k[1].Bit(nbits-1) == 1 {
+		Acc.Double(&Acc)
+		Acc.AddAssign(table[3])
+		nbits = nbits - 1
+	}
+	for i := nbits - 1; i > 0; i-- {
+		var index = k[0].Bit(i) + 2*k[1].Bit(i)
+		Acc.DoubleAndAdd(&Acc, &table[index])
+	}
+
 	P.X = Acc.X
 	P.Y = Acc.Y
-	//// if both high bits are set, then we would get to the incomplete part,
-	//// handle it separately.
-	//if k[0].Bit(nbits-1) == 1 && k[1].Bit(nbits-1) == 1 {
-	//	Acc.Double(&Acc)
-	//	Acc.AddAssign(table[3])
-	//	nbits = nbits - 1
-	//}
-	//for i := nbits - 1; i > 0; i-- {
-	//	var index = k[0].Bit(i) + 2*k[1].Bit(i)
-	//	Acc.DoubleAndAdd(&Acc, &table[index])
-	//}
-	//
+
 	//negQ.AddAssign(Acc)
 	//
 	//// Acc.Select(k[0].Bit(0), Acc, negQ)
